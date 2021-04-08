@@ -37,7 +37,7 @@ class Auction(models.Model):
 
 class Bids(models.Model):
     price = models.DecimalField(max_digits=8, decimal_places=2)
-    name = models.ManyToManyField(User)
+    user_name = models.ManyToManyField(User)
     time = models.DateField()
     item = models.ForeignKey(Auction, on_delete=models.CASCADE)
     number_of_bids = models.IntegerField()
@@ -47,12 +47,15 @@ class Bids(models.Model):
 
 
 class Comments(models.Model):
-    name = models.ForeignKey(User, on_delete=models.CASCADE)
-    created_on = models.DateField(default=timezone.now)
+    user_name = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_on = models.DateTimeField(auto_now_add=True)
     content = models.CharField(max_length=100)
     listing = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name="comments")
+    active = models.BooleanField(default=True)
+    class Meta:
+        ordering = ['created_on']
 
     def __str__(self):
-        return f"{self.name}, {self.created_on}, {self.listing}"
+        return f"comment by: {self.user_name} on {self.listing}"
 
 

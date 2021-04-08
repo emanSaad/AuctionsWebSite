@@ -4,11 +4,11 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
-
+from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 
 from .models import User, Auction
-from .forms import AuctionForm
+from .forms import AuctionForm, CommentForm
 
 
 
@@ -110,5 +110,34 @@ def auction_listings(request):
         'listings': listings  
     })
 
-def listing_details(request):
-    pass
+def listing_details(request, item_name):
+    """
+    Go to specific listing details
+    """
+    listing = get_object_or_404(Auction, item_name= item_name)
+    comments = listing.comments.filter(active=True)
+    new_comment = None
+    # if the user post a comment
+    if request.method == 'POST':
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
+            new_comment = comment_form.save(commit=False)
+            # Assign the user who put the comment
+            comment_form.instance.user_name = request.user
+
+            # assign the current listing to the comment
+            new_comment.listing = listing
+            new_comment.save()
+
+    else:
+        comment_form = CommentForm()
+
+    return render(request, "auctions/listing_details.html",{
+        'listing': listing,
+        'item_name': item_name,
+        'comments' : comments,
+        'new_comment': new_comment,
+        'comment_form': comment_form
+    })
+
+    

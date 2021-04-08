@@ -1,0 +1,50 @@
+{% extends "auctions/layout.html"%}
+{% load crispy_forms_tags %}
+{% load thumbnail %}
+
+
+{% block body %}
+<div class="listing">
+    <p><strong>Auction Name:</strong> {{ listing.item_name }}</p>
+    <p><strong>Posted in:</strong> {{ listing.posting_date }}</p>
+    <p><strong>Base Price:</strong> {{ listing.base_price }}</p>
+    <p><strong>Close Date:</strong> {{ listing.close_date }}</p>
+    <p><strong>Posted by:</strong> {{ listing.user }}</p>
+    <p><strong>Description:</strong> {{ listing.description }}</p>
+
+    {% if listing.image %}
+    {% thumbnail listing.image "200x200" crop="center" as im %}
+    <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" alt="image" />
+    {% endthumbnail %}
+    {% comment %}
+    This else catch if the user did not upload image.
+    {% endcomment%}
+    {% else %}
+    <img src="#" alt="No image available" />
+    {% endif %}
+    <div>
+        <h2>{{ comments.count }} comments</h2>
+        {% for comment in comments %}
+        <div>
+            <p><strong>Commented by: </strong>{{ comment.user_name }}</p>
+            <span><strong>Created On: </strong>{{ comment.created_on}}</span>
+            {{comment.content | linebreaks }}
+        </div>
+        {% empty %}
+        <p>There are no comments yet.</p>
+        {% endfor %}
+    </div>
+    {% if new_comment %}
+    <h2>Your comment has been added </h2>
+    {% else %}
+    <h3>Leave a comment </h3>
+    <div>
+        <form method="POST" style="margin-top: 1.3em;">
+            {{ comment_form | crispy }}
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Add comment</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

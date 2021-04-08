@@ -6,10 +6,11 @@
     <h2>Active Listings</h2>
     {% for listing in listings %}
     <div class="listing">
-        <h5> <a href="{% url 'listing_details' %}"> {{ listing.item_name }} </a></h5>
+        <h5> <a href="{% url 'listing_details' listing.item_name %}"> {{ listing.item_name }} </a></h5>
         <p><strong>Description: </strong>{{ listing.description }}</p>
         <p><strong>Posted in: </strong> {{ listing.posting_date }}</p>
         <p><strong>Price: </strong> {{ listing.base_price }}</p>
+        
         {% if listing.image %}
             {% thumbnail listing.image "200x200" crop="center" as im %}
                 <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" alt="image"/>
