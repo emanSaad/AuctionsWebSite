@@ -22,29 +22,60 @@
     {% else %}
     <img src="#" alt="No image available" />
     {% endif %}
+
+        
+       <h2>{{ bids.count }} bids</h2>
+       <p><strong>Last bid: </strong>{{ last_bid }}</p>
+       <div>
+           {% if auction_is_closed %}
+            <h4>This auction is closed on {{ listing.close_date }}</h4>
+           {% endif %}
+       </div>
+        
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group row">
+                <div class="col-lg-1">
+                    {{ bid_form |crispy }}
+                </div>
+                 <div class="col-lg-1"></div>
+                    <!-- Check if the bid reach close_date, then disable the text iput and button -->
+                    <button type="submit" name="{{bid_form.prefix}}" class= "btn btn-primary bidBtn" {% if auction_is_closed %}disabled {% endif %}>Place bid</button> 
+                </div>  
+                <div class="col-lg-2">
+                    <button type="submit" class="btn btn-link">Add To WatchList</button>
+                </div>
+             </div>
+        </form>
+       
     <div>
         <h2>{{ comments.count }} comments</h2>
         {% for comment in comments %}
         <div>
-            <p><strong>Commented by: </strong>{{ comment.user_name }}</p>
-            <span><strong>Created On: </strong>{{ comment.created_on}}</span>
-            {{comment.content | linebreaks }}
+            <table>
+                <tr>
+                    <td><strong>{{ comment.user_name }}: </strong></td>
+                    <td>{{ comment.content }}. &nbsp; </td>
+                    <td>{{ comment.created_on}}</td>
+                </tr>
+            </table>
         </div>
         {% empty %}
         <p>There are no comments yet.</p>
         {% endfor %}
     </div>
-    {% if new_comment %}
+    <!-- {% if new_comment %}
     <h2>Your comment has been added </h2>
-    {% else %}
+    {% else %} -->
     <h3>Leave a comment </h3>
-    <div>
-        <form method="POST" style="margin-top: 1.3em;">
+    <div id="commentSec">
+        <form method="POST">
             {{ comment_form | crispy }}
             {% csrf_token %}
-            <button type="submit" class="btn btn-primary">Add comment</button>
+            <button type="submit" name="{{comment_form.prefix}}" class="btn btn-primary">Add comment</button>
         </form>
     </div>
-    {% endif %}
+    <!-- {% endif %} -->
 </div>
 {% endblock %}

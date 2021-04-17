@@ -6,9 +6,12 @@ from django.urls import reverse
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
+from django.views.generic.base import TemplateView
+from django.db.models import Max
+import datetime
+from .models import User, Auction, Category,Bid
+from .forms import AuctionForm, CommentForm, BidForm
 
-from .models import User, Auction
-from .forms import AuctionForm, CommentForm
 
 
 
@@ -76,31 +79,38 @@ def create_listing(request):
     """
     Create a new auction listing.
     """
+    categories = Category.objects.all().values('name')
     if request.method == "POST":
+        category = Category.objects.get(id=1)
         form = AuctionForm(request.POST, request.FILES)
         if form.is_valid():
             item_name = form.cleaned_data["item_name"]
             description = form.cleaned_data["description"]
             close_date = form.cleaned_data["close_date"]
             base_price = form.cleaned_data["base_price"]
-            category = form.cleaned_data["category"]
             status = form.cleaned_data["status"]
             image = form.cleaned_data["image"]
+
+            instance = form.save(commit=False)
+            instance.category = category
             # to get the user instance from the User model, This gives the logged in user 
             form.instance.user = request.user
-            form.save()
+            instance.save()
             img_obj = form.instance
             return render(request, "auctions/create_listing.html",{
                 'form': form,
-                'img_obj': img_obj
+                'img_obj': img_obj,
+                'categories': categories
             })
         else:
             return render(request, "auctions/create_listing.html",{
-                'form': form
+                'form': form,
+                'categories': categories
             })
             
     return render(request, "auctions/create_listing.html",{
-        'form': AuctionForm()
+        'form': AuctionForm(),
+        'categories': categories
     })
 
 def auction_listings(request):
@@ -110,34 +120,185 @@ def auction_listings(request):
         'listings': listings  
     })
 
-def listing_details(request, item_name):
-    """
-    Go to specific listing details
-    """
-    listing = get_object_or_404(Auction, item_name= item_name)
-    comments = listing.comments.filter(active=True)
-    new_comment = None
-    # if the user post a comment
-    if request.method == 'POST':
-        comment_form = CommentForm(request.POST)
-        if comment_form.is_valid():
+def _get_form(request, formName, prefix):
+    data = request.POST if prefix in request.POST else None
+    return formName(data, prefix=prefix)
+
+
+class listing_details(TemplateView):
+    template_name = 'auctions/listing_details.html'
+    # now = datetime.datetime.now()
+    now = timezone.now()
+
+    
+
+    def get_model_objects(self, request,*args, **kwargs):
+        auction_is_closed = False
+        # get the current listing
+        listing = get_object_or_404(Auction, item_name= kwargs['item_name'])
+
+        # Get the close datte/time for the auction
+        close_date = listing.close_date
+    
+        # check if time passes the close date, return false
+        if self.now > close_date:
+            auction_is_closed = True
+        # retrieve all active related comments to this listing 
+        comments = listing.comments.filter(active=True)
+
+        #retreive all bids that have been done on this listing
+        bids = listing.bids.all()
+        last_bid = bids.latest('price')
+        # last_bid = Bid.objects.all().values('price').order_by('created_on')[:2]
+
+        return listing, comments, bids, last_bid, close_date, auction_is_closed
+
+
+    def get(self, request, *args, **kwargs):
+                
+        [listing, comments, bids, last_bid, close_date, auction_is_closed]=self.get_model_objects(self, request, *args, **kwargs) 
+        return self.render_to_response({
+            'bid_form': BidForm(prefix='bidformsub'),
+            'comment_form': CommentForm(prefix='commentformsub'),
+            'listing': listing,
+            'comments': comments,
+            'bids': bids,
+            'last_bid': last_bid,
+            'auction_is_closed': auction_is_closed
+        })
+
+    # when posting data from user
+    def post(self, request, *args, **kwargs):
+        [listing, comments, bids, last_bid, close_date, auction_is_closed] = self.get_model_objects(self, request, *args, **kwargs)
+        new_comment = None
+        new_bid = None
+        bid_form = _get_form(request, BidForm, 'bidformsub')
+        comment_form = _get_form(request, CommentForm, 'commentformsub')
+
+        # get the base price of listing
+        base_price = listing.base_price
+        
+        if bid_form.is_bound and bid_form.is_valid():
+            new_bid = bid_form.save(commit=False)
+            bid_form.instance.user_name = request.user
+            new_bid.listing = listing
+
+            """
+            Check if there are already bids or not,
+            if None compare the new bid with base price
+            if there are already bids, retrieve the max bid and compare it to the new bid. 
+            """
+            all_bids = Bid.objects.all().values('price')
+            if all_bids == None: 
+                if new_bid.price < base_price:
+                    return HttpResponse('<h2>The bid should be at least as the base price, please put another bid</h2>')
+                else:
+                    new_bid.save()
+                    return render(request, self.template_name,{
+                    'listing': listing,
+                    'bid_form': bid_form,
+                    'bids': bids,
+                    'new_bid': new_bid,
+                    'last_bid': last_bid,
+                    'comment_form': comment_form,
+                    'auction_is_closed': auction_is_closed
+                })
+            else:
+                if new_bid.price <= last_bid.price:
+                    return HttpResponse('<h2>The bid should be at least as the last bid, please put another bid</h2>')
+                else:
+                    new_bid.save()
+                    return render(request, self.template_name,{
+                    'listing': listing,
+                    'comments': comments,
+                    'bid_form': bid_form,
+                    'bids': bids,
+                    'new_bid': new_bid,
+                    'last_bid': last_bid,
+                    'comment_form': comment_form,
+                    'auction_is_closed': auction_is_closed,
+                    'new_comment': new_comment
+                })
+
+        
+        # Now process the comment form
+        elif comment_form.is_bound and comment_form.is_valid():
             new_comment = comment_form.save(commit=False)
+
             # Assign the user who put the comment
             comment_form.instance.user_name = request.user
 
             # assign the current listing to the comment
             new_comment.listing = listing
             new_comment.save()
+            return render(request, self.template_name,{
+                'listing': listing,
+                'comments': comments,
+                'bids': bids,
+                'last_bid': last_bid, 
+                'new_comment': new_comment,
+                'comment_form': comment_form,
+                'bid_form': bid_form,
+                'auction_is_closed': auction_is_closed
 
-    else:
-        comment_form = CommentForm()
+            })
+        return render(request, self.template_name,{
+            'listing': listing,
+            'comments': comments,
+            'bids': bids,
+            'last_bid': last_bid, 
+            'bid_form': BidForm(),
+            'comment_form': CommentForm(),
+            'bid_form': bid_form,
+            'auction_is_closed': auction_is_closed
 
-    return render(request, "auctions/listing_details.html",{
-        'listing': listing,
-        'item_name': item_name,
-        'comments' : comments,
-        'new_comment': new_comment,
-        'comment_form': comment_form
-    })
+        })
+
+
+
+
+# def listing_details(request, item_name):
+#     """
+#     Go to specific listing details, you can add bid and add listing to watchlist
+#     """
+#     listing = get_object_or_404(Auction, item_name= item_name)
+#     comments = listing.comments.filter(active=True)
+#     # bids.item = listing
+#     bids = listing.bids.all()
+#     new_comment = None
+#     new_bid = None
+#     # if the user post a comment
+#     if request.method == 'POST':
+#         comment_form = CommentForm(request.POST)
+#         bid_form = BidForm(request.POST)
+#         if comment_form.is_valid() and bid_form.is_valid():
+#             new_comment = comment_form.save(commit=False)
+#             # Assign the user who put the comment
+#             comment_form.instance.user_name = request.user
+#             # assign the current listing to the comment
+#             new_comment.listing = listing
+#             new_comment.save()
+#             # Now add a bid    
+           
+#             new_bid = bid_form.save(commit=False)
+#             bid_form.instance.user_name = request.user
+            
+
+#             new_bid.listing = listing
+#             new_bid.save()
+
+#     else:
+#         comment_form = CommentForm()
+#         bid_form = BidForm()
+
+#     return render(request, "auctions/listing_details.html",{
+#         'listing': listing,
+#         'item_name': item_name,
+#         'comments' : comments,
+#         'new_comment': new_comment,
+#         'comment_form': comment_form,
+#         'bidForm': bid_form,
+#         'bids': bids
+#     })
 
     

@@ -9,3 +9,19 @@ body {
 #submitbtn{
     margin-top: 20px;
 }
+
+#commentSec{
+    margin-top: 20px;
+
+}
+
+#commentSec * {
+    margin-top: 10px;
+}
+
+.bidBtn{
+    margin-left: 20px;
+    margin-top: 25px;
+    
+}
+
