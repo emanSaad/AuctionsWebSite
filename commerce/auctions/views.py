@@ -255,6 +255,7 @@ class listing_details(TemplateView):
             'auction_is_closed': auction_is_closed
 
         })
+<<<<<<< HEAD
 
 
 
@@ -296,3 +297,5 @@ def delete_listing(request, listing_id):
         })
     return render(request, "auctions/add_to_watchlist.html")
     
+=======
+>>>>>>> fcfb3c483e997fbbe3584b6c382e76103956b6f5
