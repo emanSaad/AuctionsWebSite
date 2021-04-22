@@ -40,7 +40,7 @@ class Auction(models.Model):
     image = models.ImageField(upload_to='images', blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user}, {self.item_name}, {self.status}"
+        return f"{self.item_name}"
 
     # To order the items based on the date they are posted. From the latest to oldest
     class Meta:
@@ -50,11 +50,10 @@ class Auction(models.Model):
 
 class WatchList(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    listings = models.ManyToManyField(Auction)
+    watchlist = models.ForeignKey(Auction, on_delete=models.CASCADE,related_name="listings", blank=True, null=True)
 
     def __str__(self):
-        return f"{self.listing}, {self.user}"
-
+        return f"{self.watchlist}"
 
 
 class Bid(models.Model):

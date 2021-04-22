@@ -9,7 +9,9 @@ from django.conf import settings
 from django.views.generic.base import TemplateView
 from django.db.models import Max
 import datetime
-from .models import User, Auction, Category,Bid
+from django.contrib import messages
+
+from .models import User, Auction, Category,Bid, WatchList
 from .forms import AuctionForm, CommentForm, BidForm
 
 
@@ -256,49 +258,41 @@ class listing_details(TemplateView):
 
 
 
+def add_to_watchlist(request, listing_id ):
+    item = get_object_or_404(Auction, pk=listing_id)
+    
+    #get the watchlist items of this user
+    user_listings = WatchList.objects.filter(user=request.user)
+    
+    if request.method == "POST":
+        user_listing, created = WatchList.objects.get_or_create(user=request.user, watchlist = item)
+        print("user_listing: ", user_listing)
+        
+        if not created:
+            message = "This listing is already exist in your watchlist."
+        else:
+            message = "Your listing has been added."
 
-# def listing_details(request, item_name):
-#     """
-#     Go to specific listing details, you can add bid and add listing to watchlist
-#     """
-#     listing = get_object_or_404(Auction, item_name= item_name)
-#     comments = listing.comments.filter(active=True)
-#     # bids.item = listing
-#     bids = listing.bids.all()
-#     new_comment = None
-#     new_bid = None
-#     # if the user post a comment
-#     if request.method == 'POST':
-#         comment_form = CommentForm(request.POST)
-#         bid_form = BidForm(request.POST)
-#         if comment_form.is_valid() and bid_form.is_valid():
-#             new_comment = comment_form.save(commit=False)
-#             # Assign the user who put the comment
-#             comment_form.instance.user_name = request.user
-#             # assign the current listing to the comment
-#             new_comment.listing = listing
-#             new_comment.save()
-#             # Now add a bid    
-           
-#             new_bid = bid_form.save(commit=False)
-#             bid_form.instance.user_name = request.user
-            
+        return render(request, "auctions/add_to_watchlist.html",{
+                
+            'message': message,
+            'created': created,
+            'user_listings': user_listings,
+            'created': created,
+        })
+    return render(request, "auctions/listing_details.html",{
+    })
 
-#             new_bid.listing = listing
-#             new_bid.save()
-
-#     else:
-#         comment_form = CommentForm()
-#         bid_form = BidForm()
-
-#     return render(request, "auctions/listing_details.html",{
-#         'listing': listing,
-#         'item_name': item_name,
-#         'comments' : comments,
-#         'new_comment': new_comment,
-#         'comment_form': comment_form,
-#         'bidForm': bid_form,
-#         'bids': bids
-#     })
-
+def delete_listing(request, listing_id):
+    
+    if request.method == "POST":
+        # get the selected item by user, then delete it from this user watchlist
+        listing = WatchList.objects.get(pk=listing_id)
+        listing.delete()
+        user_listings = WatchList.objects.filter(user=request.user)
+        
+        return render(request, "auctions/add_to_watchlist.html",{
+            'user_listings': user_listings
+        })
+    return render(request, "auctions/add_to_watchlist.html")
     

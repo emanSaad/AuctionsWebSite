@@ -25,3 +25,16 @@ body {
     
 }
 
+.watchlist{
+    position: absolute;
+    margin: -5px;
+
+    
+}
+
+.itemList{
+    margin-left: 5px;
+    margin-top: 10px;
+
+}
+

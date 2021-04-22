@@ -1,4 +1,4 @@
-{% extends "auctions/layout.html"%}
+{% extends "auctions/layout.html" %}
 {% load crispy_forms_tags %}
 {% load thumbnail %}
 
@@ -43,11 +43,23 @@
                     <!-- Check if the bid reach close_date, then disable the text iput and button -->
                     <button type="submit" name="{{bid_form.prefix}}" class= "btn btn-primary bidBtn" {% if auction_is_closed %}disabled {% endif %}>Place bid</button> 
                 </div>  
-                <div class="col-lg-2">
+                <!-- <div class="col-lg-2">
                     <button type="submit" class="btn btn-link">Add To WatchList</button>
-                </div>
+                </div> -->
              </div>
         </form>
+
+        <!-- Add items to your watchlist -->
+         <form action="{% url 'add_to_watchlist' listing.id %}" method="POST">
+             {% csrf_token %}
+            <!--<select name="listing">
+                {% for listing in listings %}
+                    <option value="listing.id">{{ listing.item_name }}</option>
+                {% endfor %}
+            </select> -->
+            <button type="submit" class="btn btn-link">Add to watchlist</button>
+        </form> 
+        <!-- <a href="{% url 'add_to_watchlist' listing.id %}" role="button" class="btn btn-link">Add to Watchlist</a> -->
        
     <div>
         <h2>{{ comments.count }} comments</h2>
