@@ -1,0 +1,22 @@
+{% extends 'auctions/layout.html' %}
+{% load thumbnail %}
+
+{% block  body %}
+    {% for listing in listings %}
+    <div class="listing">
+        <p>Auction Name: {{ listing.name }}</p>
+        <p>Posted in: {{ listing.start_date }}</p>
+        <p>Base Price: {{ listing.base_price }}</p>
+        {% if listing.image %}
+            {% thumbnail listing.image "200x200" crop="center" as im %}
+                <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" alt="image"/>
+            {% endthumbnail %}
+        {% comment %}
+            This else catch if the user did not upload image.
+        {% endcomment%}    
+        {% else %}
+            <img  src="#" alt="No image available"/>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% endblock %}
