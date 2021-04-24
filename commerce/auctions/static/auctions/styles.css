@@ -16,25 +16,44 @@ body {
 }
 
 #commentSec * {
-    margin-top: 10px;
+    margin-top: 20px;
 }
 
 .bidBtn{
-    margin-left: 20px;
+    margin-left:40px;
     margin-top: 25px;
     
 }
 
 .watchlist{
     position: absolute;
-    margin: -5px;
-
-    
+    margin: -5px;  
 }
 
 .itemList{
     margin-left: 5px;
     margin-top: 10px;
-
 }
 
+.processingBtn{
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+.listing{
+    padding: 5px;
+    margin-bottom: 5px;
+    /* border-style: groove; */
+}
+.editDelBtn{
+   margin-top: 20px;
+}
+
+.editDelBtn > button{
+    padding-left: 10px ;
+    size: 50px;
+}
+
+.lineBreak{
+    border: 1px solid rgb(141, 139, 139);
+}

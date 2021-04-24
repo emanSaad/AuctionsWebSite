@@ -9,6 +9,7 @@ from django.conf import settings
 from django.views.generic.base import TemplateView
 from django.db.models import Max
 import datetime
+
 from django.contrib import messages
 
 from .models import User, Auction, Category,Bid, WatchList
@@ -141,23 +142,33 @@ class listing_details(TemplateView):
 
         # Get the close datte/time for the auction
         close_date = listing.close_date
-    
+        print("close date: ",close_date)
+        
         # check if time passes the close date, return false
         if self.now > close_date:
             auction_is_closed = True
+
+            print("Time now: ",self.now)
         # retrieve all active related comments to this listing 
         comments = listing.comments.filter(active=True)
-
         #retreive all bids that have been done on this listing
         bids = listing.bids.all()
-        last_bid = bids.latest('price')
-        # last_bid = Bid.objects.all().values('price').order_by('created_on')[:2]
 
+        # check if there is no bid yet
+        if  not bids:
+            last_bid = bids.first()
+            # field_name = 'price'
+            # obj = Bid.objects.first()
+            # last_bid = getattr(obj, field_name)
+            print("last_bid default: ", last_bid)
+        else:
+        
+            last_bid = bids.latest('price')
+            print("last bid", last_bid)
         return listing, comments, bids, last_bid, close_date, auction_is_closed
 
 
-    def get(self, request, *args, **kwargs):
-                
+    def get(self, request, *args, **kwargs):        
         [listing, comments, bids, last_bid, close_date, auction_is_closed]=self.get_model_objects(self, request, *args, **kwargs) 
         return self.render_to_response({
             'bid_form': BidForm(prefix='bidformsub'),
@@ -191,6 +202,7 @@ class listing_details(TemplateView):
             if there are already bids, retrieve the max bid and compare it to the new bid. 
             """
             all_bids = Bid.objects.all().values('price')
+            print("all Bids price", all_bids)
             if all_bids == None: 
                 if new_bid.price < base_price:
                     return HttpResponse('<h2>The bid should be at least as the base price, please put another bid</h2>')

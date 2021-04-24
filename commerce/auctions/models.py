@@ -65,6 +65,9 @@ class Bid(models.Model):
     class Meta:
         ordering = ['created_on']
 
+    # def __init__(self, price):
+    #     self.price = 0.0
+
     def __str__(self):
         return f'{self.price}$, placed by {self.user_name}'
 
