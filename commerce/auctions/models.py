@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.urls import reverse
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.forms import ModelForm
@@ -7,17 +8,13 @@ from sorl.thumbnail import ImageField
 
 
 
-STATUS = (
-    (0,"Active"),
-    (1,"Closed")
-)
 
 class User(AbstractUser):
     pass
 
 class Category(models.Model):
     name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=200)
+    slug = models.SlugField(max_length=200, unique=True)
 
 
     class Meta:
@@ -28,16 +25,32 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse('auctions:auctions_by_category', args=[self.slug])
+
+
+# Auctions model
 class Auction(models.Model):
+    STATUS = (
+    ("active","Active"),
+    ("closed","Closed")
+)
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    item_name = models.CharField(max_length=100)
+    item_name = models.CharField(max_length=100, db_index=True)
+    slug = models.SlugField(max_length=250, db_index=True, unique_for_date='posting_date', default='item_name')
     description = models.TextField(blank=True)
+    # auto_now_add make the date is saved automatically when creating the object
     posting_date = models.DateTimeField(auto_now_add=True)
     close_date = models.DateTimeField()
     base_price = models.DecimalField(max_digits=8, decimal_places=2)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='items')
-    status = models.IntegerField(choices=STATUS, default=0, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, choices=STATUS, default='active', blank=True)
     image = models.ImageField(upload_to='images', blank=True, null=True)
+
+    # ...
+    def get_absolute_url(self):
+        return reverse('auctions:listing_details',args=[self.item_name])
 
     def __str__(self):
         return f"{self.item_name}"
@@ -45,6 +58,7 @@ class Auction(models.Model):
     # To order the items based on the date they are posted. From the latest to oldest
     class Meta:
         ordering = ["-posting_date"]
+        index_together = (('id', 'slug'),)
 
 
 

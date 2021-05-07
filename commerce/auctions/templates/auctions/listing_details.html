@@ -11,15 +11,21 @@
         <div class="panel_heading">
             <div class="row">
                 <!-- Add items to your watchlist -->
-                <form action="{% url 'add_to_watchlist' listing.id %}" method="POST">
+                <form action="{% url 'auctions:add_to_watchlist' listing.id %}" method="POST">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-link">Add to watchlist</button>
                 </form>
                 <!-- Close or edit the auction if you are the one who created it -->
-                <form method="POST" class="form-inline">
-                    <button class="btn btn-link" type="submit">Edit Auction</button>
-                    <button class="btn btn-link" type="submit">Close Auction</button>
+                <form method="POST" action="{% url 'auctions:edit_listing' listing.id%}" class="form-inline">
+                    {% csrf_token %}
+                    <button class="btn btn-link" id="editAuction" type="submit" {% if edit_permission %}disabled {% endif %}>Edit Auction</button>
+                    <button class="btn btn-link" id="closeAuction" type="submit" {% if edit_permission %}disabled {% endif %}>Close Auction</button>
                 </form>
+                <div class="shareLink">
+                    <a href="{% url 'auctions:share_listing' listing.id %}">
+                        Share this listing
+                    </a>
+                </div>
             </div>
 
         </div>
@@ -28,6 +34,7 @@
         <div class="panel-body">
             <h2>Listing Details</h2>
             <p><strong>Auction Name:</strong> {{ listing.item_name }}</p>
+            <p><strong>Category:</strong> {{ listing.category }}</p>
             <p><strong>Posted in:</strong> {{ listing.posting_date }}</p>
             <p><strong>Base Price:</strong> {{ listing.base_price }}</p>
             <p><strong>Close Date:</strong> {{ listing.close_date }}</p>
@@ -76,7 +83,10 @@
         <hr class="lineBreak">
         <!--  Comments section -->
         <div class="comments">
-            <h2>{{ comments.count }} comments</h2>
+            <!-- assign the number of comments to total_comments variable -->
+            {% with comments.count as total_comments %}
+                <h2>{{ total_comments }} comment{{ total_comments|pluralize }}</h2>
+            {% endwith %}
             {% for comment in comments %}
             <div>
                 <table>
@@ -90,10 +100,6 @@
             {% empty %}
             <p>There are no comments yet.</p>
             {% endfor %}
-
-            <!-- {% if new_comment %}
-            <h2>Your comment has been added </h2>
-            {% else %} -->
             
             <div id="commentSec">
                 <h3>Leave a comment </h3>
@@ -103,7 +109,6 @@
                     <button type="submit" name="{{comment_form.prefix}}" class="btn btn-primary">Add comment</button>
                 </form>
             </div>
-            <!-- {% endif %} -->
         </div>
     </div> <!-- panel body -->
 

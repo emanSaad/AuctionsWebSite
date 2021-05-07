@@ -27,7 +27,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+#  Host server setting Gamil, for sharing listing
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'em.alhaweri@gmail.com'
+# this passsword from google account "2-step verification"
+EMAIL_HOST_PASSWORD = 'bcfbthndudgekztf'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 # Application definition
 
 INSTALLED_APPS = [
@@ -65,6 +71,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+               
+                # this my context processor
+                'auctions.context_processors.get_listing'
             ],
         },
     },

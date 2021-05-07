@@ -1,0 +1,40 @@
+{% extends "auctions/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+
+<h1>Edit Listing</h1>
+<form action="{% url 'auctions:edit_listing' listing.id %}" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.item_name | as_crispy_field }}
+    {{ form.description | as_crispy_field }}
+
+    {{ form.close_date | as_crispy_field }}
+    <div class="row">
+        <div class="col-6">
+            {{ form.base_price | as_crispy_field }}
+        </div>
+        <div class="col-6">
+            {{ form.category | as_crispy_field }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            {{ form.status | as_crispy_field}}
+        </div>
+        <div class="col-6">
+            {{ form.image | as_crispy_field}}
+        </div>
+    </div>
+
+    <div id="submitbtn">
+        <button type="submit" class="btn btn-primary"> Submit </button>
+    </div>
+</form>
+</div>
+<!-- {% if img_obj %} -->
+<h3>Succesfully uploaded.</h3>
+
+<!-- {% endif %} -->
+
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+<h1>WatchList</h1>
+<!-- <h4>{{ message }}</h4> -->
+<ul>
+    {% for listing in listings %}
+
+    <li  class="itemList">
+        <form method="POST" action="{% url 'auctions:delete_listing' listing.id %}" class="watchlist">
+            {% csrf_token %}
+            <table>
+                <tr >
+                    <td><h5 id="watchlist-links"> <a href="{{ listing.get_absolute_url }}"> {{ listing }} </a></h5></td>
+                    <td> <button class="btn btn-link">Delete</button></td>
+                </tr>
+            </table>
+        </form>
+    </li>
+    {% empty %}
+    <p>There are no listing yet.</p>
+    {% endfor %}
+</ul>
+
+{% endblock %}

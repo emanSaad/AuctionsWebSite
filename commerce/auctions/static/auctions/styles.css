@@ -57,3 +57,21 @@ body {
 .lineBreak{
     border: 1px solid rgb(141, 139, 139);
 }
+
+.shareLink{
+    margin-top: 7px;
+}
+
+/* style watchlist links */
+#watchlist-links a{
+    color: rgb(92, 87, 86);
+
+}
+
+/* categories list  */
+.category{
+    
+    padding-right: 10px;
+}
+
+

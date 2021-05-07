@@ -13,12 +13,13 @@ class WatchListAdmin(admin.ModelAdmin):
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug']
-    # prepopulated_fields = {'slug': ('name',)}
+    prepopulated_fields = {'slug': ('name',)}
 
 @admin.register(Auction)
 class AuctionAdmin(admin.ModelAdmin):
-    list_display = ['user','item_name', 'posting_date', 'close_date', 'base_price', 'status']
+    list_display = ['user','item_name','slug', 'posting_date', 'close_date', 'base_price', 'status']
     list_editable = ['item_name', 'close_date', 'base_price', 'status']
+    prepopulated_fields = {'slug': ('item_name',)}
 
 @admin.register(Bid)
 class BidsAdmin(admin.ModelAdmin):

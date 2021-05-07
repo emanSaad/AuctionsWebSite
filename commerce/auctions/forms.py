@@ -7,7 +7,7 @@ from .models import *
 class AuctionForm(ModelForm):
     class Meta:
         model = Auction
-        fields = ['item_name', 'description', 'close_date', 'base_price', 'status', 'image']
+        fields = ['item_name', 'description', 'close_date', 'base_price', 'status', 'image','category']
         # exclude = ('category', ) 
 
 class CommentForm(ModelForm):
@@ -28,3 +28,12 @@ class BidForm(ModelForm):
 #     class Meta:
 #         model = Category
 #         fields = ['name']
+
+
+
+# form for sharing listing
+class EmailLisingForm(forms.Form):
+    name = forms.CharField(max_length=25)
+    email= forms.EmailField()
+    to = forms.EmailField()
+    comments = forms.CharField(required=False, widget=forms.Textarea)
