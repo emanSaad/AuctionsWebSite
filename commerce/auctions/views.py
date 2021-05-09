@@ -18,19 +18,37 @@ from .models import User, Auction, Category,Bid, WatchList
 from .forms import AuctionForm, CommentForm, BidForm, EmailLisingForm
 
 
+"""
+This view render a HTML page that dispaly a list of the active listing available 
+in the website. if the user want specifc category of listing, he can choose the category
+and the related listing will be displayed.
+"""
 def index(request, category_slug=None):
     category = None
     categories = Category.objects.all()
     listings = Auction.objects.filter(status='active')
 
-    # if the user choose a category, list the listings og this category
+    # # add paginatior, 3 listings for each page
+    # paginator = Paginator(listings, 3)
+    # page = request.GET.get('page')
+    # try:
+    #     listings_in_page = paginator.page(page)
+    # except PageNotAnInteger:
+    #     # if the page is not an integer, then return the first page
+    #     listings_in_page = paginator.page(1)
+    # except EmptyPage:
+    #     listings_in_page = paginator.page(paginator.num_pages)
+
+    # if the user choose a category, list the listings of this category
     if category_slug:
         category = get_object_or_404(Category, slug=category_slug)
         listings = listings.filter(category=category)
     return render(request,"auctions/index.html",{
         'listings': listings,
         'category': category,
-        'categories': categories
+        'categories': categories, 
+        # 'page': page,
+        # 'listings_in_page': listings_in_page
     })
 
 # # using class based view
@@ -44,7 +62,11 @@ def index(request, category_slug=None):
 #     paginate_by = 3
 #     template_name = "auctions/index.html"
 
-# share Listing view
+
+"""
+This view allows user to share a particular listing with others,
+this happpened by sending the url of the listing to the desired email 
+"""
 def share_listing(request, listing_id):
     # retreive listing by id
     listing = get_object_or_404(Auction, id=listing_id, status='active')
@@ -53,8 +75,10 @@ def share_listing(request, listing_id):
         form = EmailLisingForm(request.POST)
         if form.is_valid():
             cleanData = form.cleaned_data
-            # send email
-            # get the url of the listing, because we need to include the listing link in the sent email
+
+            """send email,
+            get the url of the listing,
+            because we need to include the listing link in the sent email"""
             listing_url = request.build_absolute_uri(listing.get_absolute_url())
             subject = f"{cleanData['name']} recommends you see " \
                       f"{listing.item_name}"
@@ -95,7 +119,6 @@ def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("auctions:index"))
 
-
 def register(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -126,12 +149,13 @@ def register(request):
 def create_listing(request):
     """
     Create a new auction listing.
+    this view will render an html page containing form, allows to the user
+    to enter the listing information and create this listing.
     """
     categories = Category.objects.all().values('name')
     if request.method == "POST":
     
         category = Category.objects.get(id=1)
-        # category = get_object_or_404(Auction, id=1)
         form = AuctionForm(request.POST, request.FILES)
         if form.is_valid():
             item_name = form.cleaned_data["item_name"]
@@ -143,10 +167,7 @@ def create_listing(request):
             category = form.cleaned_data['category']
             instance = form.save(commit=False)
             
-            # category = AuctionForm(instance=category)
-            # instance.category = form.request.POST.get['category']
-            # instance.category = category
-            # to get the user instance from the User model, This gives the logged in user 
+            """to get the user instance from the User model, This gives the logged in user""" 
             form.instance.user = request.user
             instance.save()
             img_obj = form.instance
@@ -166,19 +187,20 @@ def create_listing(request):
         'categories': categories
     })
 
-def auction_listings(request):
-    pass
-    
-    # listings = Auction.objects.filter(status=0).order_by('-posting_date')
-    # return render(request, "auctions/auction_listings.html",{
-    #     'listings': listings  
-    # })
-
+"""
+because the form has two buttons each one do different task,
+we need to determins which button is clicked. 
+"""
 def _get_form(request, formName, prefix):
     data = request.POST if prefix in request.POST else None
     return formName(data, prefix=prefix)
 
-
+"""
+This view responsible for representing listing details, and allow the user to:
+- add a bid.
+- add a comment.
+- edit or delete the listing if he is the one who created the listing. 
+"""
 class listing_details(TemplateView):
     template_name = 'auctions/listing_details.html'
     now = timezone.now()
@@ -212,7 +234,7 @@ class listing_details(TemplateView):
     def get(self, request, *args, **kwargs):        
         [listing, comments, last_bid, bids, close_date, auction_is_closed] = self.get_model_objects(self, request, *args, **kwargs) 
 
-        # if the user is the one who create the listing, allows him to edit or delete this listing
+        """if the user is the one who create the listing, allows him to edit or delete this listing"""
         edit_permission = True
         if request.user == listing.user:
             edit_permission = False
@@ -291,10 +313,13 @@ class listing_details(TemplateView):
 
         })
 
+"""
+When user in listing details page, he can add this listing to its watchlist
+"""
 def add_to_watchlist(request, listing_id ):
     item = get_object_or_404(Auction, pk=listing_id)
     
-    #get the watchlist items of this user
+    # get the watchlist items of this user
     user_listings = WatchList.objects.filter(user=request.user)
     
     if request.method == "POST":
@@ -316,17 +341,29 @@ def add_to_watchlist(request, listing_id ):
     return render(request, "auctions/listing_details.html")
 
 
-""" get all watchlist items for current user """
+""" 
+get all watchlist items for current user
+"""
 def watchlist_items(request):
-    listings = WatchList.objects.filter(user=request.user)
-    print("listings in watchList:", listings)
-    # listings = listings.values_list()
-    print("watchlist listings: ", listings) 
+    
+    userListings = WatchList.objects.filter(user=request.user)
+    print("userListings in watchlist:", userListings)
+
+    """
+    this to make url go to listing details.
+    we need Auction listing and not WatchList listing
+     """ 
+    auctionlistings = Auction.objects.filter(status='active')
+    
     return render(request, "auctions/watchlist_items.html", {
-        'listings': listings
+        "userListings": userListings,
+        'auctionlistings': auctionlistings
     })
 
-
+"""
+Delete a listing from user watchlist.
+Render the remaining listings after deleting to the HTML template 
+"""
 def delete_listing(request, listing_id):
     
     if request.method == "POST":
@@ -342,12 +379,15 @@ def delete_listing(request, listing_id):
     return render(request, "auctions/add_to_watchlist.html")
 
 
-# This for user to edit the auction who created  
+"""
+This function is for user to edit the auction who created
+"""  
 def edit_listing(request, listing_id):
 
     listing = get_object_or_404(Auction, pk=listing_id)
     print("This listing:", listing)
-    # we need listings and category when we redirect the user to the index.html
+
+    """we need listings and category when we redirect the user to the index.html"""
     listings = Auction.objects.all()
     category = Category.objects.filter(id=1)
     

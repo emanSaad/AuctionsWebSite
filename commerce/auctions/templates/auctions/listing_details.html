@@ -72,15 +72,13 @@
                             {{ bid_form |crispy }}
                         </div>
                         <div class="col-lg-1"></div>
-                        <!-- <button type="submit" name="{{bid_form.prefix}}" class= "btn btn-primary bidBtn" {% if auction_is_closed %}disabled {% endif %}>Place bid</button>  -->
-                        <button type="submit" name="{{bid_form.prefix}}" class="btn btn-primary bidBtn">Place
-                            bid</button>
-
+                        <button type="submit" name="{{bid_form.prefix}}" class= "btn btn-primary bidBtn" {% if auction_is_closed %}disabled {% endif %}>Place bid</button>
                     </div>
             </div>
             </form>
         </div>
         <hr class="lineBreak">
+        
         <!--  Comments section -->
         <div class="comments">
             <!-- assign the number of comments to total_comments variable -->

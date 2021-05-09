@@ -21,11 +21,9 @@
                     <a href="{% url 'auctions:index' %}">All</a>
                 </div>
                 {% for categ in categories %}
-                <!-- <div {% if category.slug == categ.slug %} class="selected" {% endif %}> -->
                 <div class="category">
                     <a href="{{categ.get_absolute_url }}">{{ categ.name }} </a>
                 </div>
-                <!-- </div> -->
                 {% endfor %}
             </div>
 
@@ -37,7 +35,7 @@
             <h2>{% if category %}{{ category.name }}{% else %} Active Listings {% endif %}</h2>
             {% for listing in listings %}
             <div>
-                <h5> <a href="{{ listing.get_absolute_url }}"> {{ listing.item_name }} </a></h5>
+                <h5> <a href="{{ listing.get_absolute_url }}"> {{ listing }} </a></h5>
                 <p><strong>Description: </strong>{{ listing.description }}</p>
                 <p><strong>Posted in: </strong> {{ listing.posting_date }}</p>
                 <p><strong>Price: </strong> {{ listing.base_price }}</p>
@@ -58,5 +56,5 @@
     </div> <!-- end panel default -->
 </div><!-- end container -->
 
-{% include 'auctions/pagination.html' with page=page_obj %}
+{% include 'auctions/pagination.html' with page=listings_in_page %}
 {% endblock %}

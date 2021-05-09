@@ -5,7 +5,7 @@
 <h1>WatchList</h1>
 <!-- <h4>{{ message }}</h4> -->
 <ul>
-    {% for listing in listings %}
+    {% for listing in userListings %}
 
     <li  class="itemList">
         <form method="POST" action="{% url 'auctions:delete_listing' listing.id %}" class="watchlist">

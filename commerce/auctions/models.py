@@ -6,11 +6,9 @@ from django.forms import ModelForm
 from sorl.thumbnail import ImageField
 
 
-
-
-
 class User(AbstractUser):
     pass
+
 
 class Category(models.Model):
     name = models.CharField(max_length=200)
@@ -29,7 +27,7 @@ class Category(models.Model):
         return reverse('auctions:auctions_by_category', args=[self.slug])
 
 
-# Auctions model
+# Auction model
 class Auction(models.Model):
     STATUS = (
     ("active","Active"),
@@ -40,6 +38,7 @@ class Auction(models.Model):
     item_name = models.CharField(max_length=100, db_index=True)
     slug = models.SlugField(max_length=250, db_index=True, unique_for_date='posting_date', default='item_name')
     description = models.TextField(blank=True)
+
     # auto_now_add make the date is saved automatically when creating the object
     posting_date = models.DateTimeField(auto_now_add=True)
     close_date = models.DateTimeField()
@@ -78,9 +77,6 @@ class Bid(models.Model):
    # number_of_bids = models.IntegerField(blank=True, null=True)
     class Meta:
         ordering = ['created_on']
-
-    # def __init__(self, price):
-    #     self.price = 0.0
 
     def __str__(self):
         return f'{self.price}$, placed by {self.user_name}'

@@ -12,7 +12,7 @@
 
             <table >
                 <tr >
-                    <td ><h5 id="watchlist-links"> <a href="{% url 'auctions:listing_details' listing.id %}"> {{ listing }} </a></h5></td>
+                    <td ><h5 id="watchlist-links"> <a href="{{ listing.get_absolute_url }}"> {{ listing }} </a></h5></td>
                     <td> <button class="btn btn-link">Delete</button></td>
                 </tr>
             </table>
