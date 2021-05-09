@@ -4,23 +4,22 @@
 
 <h1>WatchList</h1>
 <h4>{{ message }}</h4>
-<ul>
-    {% for listing in user_listings %}
-    <li  class="itemList">
-        <form method="POST" action="{% url 'auctions:delete_listing' listing.id %}" class="watchlist">
-            {% csrf_token %}
 
-            <table >
-                <tr >
-                    <td ><h5 id="watchlist-links"> <a href="{{ listing.get_absolute_url }}"> {{ listing }} </a></h5></td>
-                    <td> <button class="btn btn-link">Delete</button></td>
-                </tr>
-            </table>
-        </form>
-    </li>
+    {% for listing in user_listings %}
+    <ul class="nav">
+        <li class="nav-item">
+          <a class="nav-link active watchlist-links" aria-current="page" href="{% url 'auctions:listing_details' listing %}">{{ listing }}</a>
+        </li>
+        <li class="nav-item itemList">
+            <form method="POST" action="{% url 'auctions:delete_listing' listing.id %}" class="watchlist">
+                {% csrf_token %}
+                <button class="btn btn-link">Delete</button>
+            </form>    
+          
+        </li>
+    </ul>
     {% empty %}
     <p>There are no listing yet.</p>
     {% endfor %}
-</ul>
 
 {% endblock %}

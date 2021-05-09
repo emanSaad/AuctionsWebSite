@@ -8,7 +8,7 @@ admin.site.register(User)
 
 @admin.register(WatchList)
 class WatchListAdmin(admin.ModelAdmin):
-    list_display = ['user', 'watchlist']
+    list_display = ['user', 'listing']
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):

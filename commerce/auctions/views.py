@@ -321,9 +321,9 @@ def add_to_watchlist(request, listing_id ):
     
     # get the watchlist items of this user
     user_listings = WatchList.objects.filter(user=request.user)
-    
+    print("user_listing........s:", user_listings)
     if request.method == "POST":
-        user_listing, created = WatchList.objects.get_or_create(user=request.user, watchlist = item)
+        user_listing, created = WatchList.objects.get_or_create(user=request.user, listing = item)
         print("user_listing: ", user_listing)
         
         if not created:
@@ -336,9 +336,10 @@ def add_to_watchlist(request, listing_id ):
             'message': message,
             'created': created,
             'user_listings': user_listings,
-            'created': created
         })
-    return render(request, "auctions/listing_details.html")
+    return render(request, "auctions/add_to_watchlist.html", {
+        'user_listings': user_listings,        
+    })
 
 
 """ 

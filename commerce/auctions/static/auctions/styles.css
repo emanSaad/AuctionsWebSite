@@ -63,7 +63,7 @@ body {
 }
 
 /* style watchlist links */
-#watchlist-links a{
+.watchlist-links{
     color: rgb(92, 87, 86);
 
 }
@@ -73,5 +73,10 @@ body {
     
     padding-right: 10px;
 }
+
+/*  add bullet in navbar list  */
+.watchlist-links:before {
+    content: "• ";
+  }
 
 
