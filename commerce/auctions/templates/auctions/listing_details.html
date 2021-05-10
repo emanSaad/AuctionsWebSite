@@ -19,7 +19,7 @@
                 <form method="POST" action="{% url 'auctions:edit_listing' listing.id%}" class="form-inline">
                     {% csrf_token %}
                     <button class="btn btn-link" id="editAuction" type="submit" {% if edit_permission %}disabled {% endif %}>Edit Auction</button>
-                    <button class="btn btn-link" id="closeAuction" type="submit" {% if edit_permission %}disabled {% endif %}>Close Auction</button>
+                    <!-- <button class="btn btn-link" id="closeAuction" type="submit" {% if edit_permission %}disabled {% endif %}>Close Auction</button> -->
                 </form>
                 <div class="shareLink">
                     <a href="{% url 'auctions:share_listing' listing.id %}">

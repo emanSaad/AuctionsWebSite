@@ -28,16 +28,16 @@ def index(request, category_slug=None):
     categories = Category.objects.all()
     listings = Auction.objects.filter(status='active')
 
-    # # add paginatior, 3 listings for each page
-    # paginator = Paginator(listings, 3)
-    # page = request.GET.get('page')
-    # try:
-    #     listings_in_page = paginator.page(page)
-    # except PageNotAnInteger:
-    #     # if the page is not an integer, then return the first page
-    #     listings_in_page = paginator.page(1)
-    # except EmptyPage:
-    #     listings_in_page = paginator.page(paginator.num_pages)
+    # add paginatior, 3 listings for each page
+    paginator = Paginator(listings, 3)
+    page = request.GET.get('page')
+    try:
+        listings_in_page = paginator.page(page)
+    except PageNotAnInteger:
+        # if the page is not an integer, then return the first page
+        listings_in_page = paginator.page(1)
+    except EmptyPage:
+        listings_in_page = paginator.page(paginator.num_pages)
 
     # if the user choose a category, list the listings of this category
     if category_slug:
@@ -47,8 +47,8 @@ def index(request, category_slug=None):
         'listings': listings,
         'category': category,
         'categories': categories, 
-        # 'page': page,
-        # 'listings_in_page': listings_in_page
+        'page': page,
+        'listings_in_page': listings_in_page
     })
 
 # # using class based view
@@ -258,6 +258,16 @@ class listing_details(TemplateView):
         bid_form = _get_form(request, BidForm, 'bidformsub')
         comment_form = _get_form(request, CommentForm, 'commentformsub')
 
+        """
+        first check if the user logged in or not.
+        if the user is anonymous, then redirect him to the registeration page
+        to either create a new account or log in if he has an account. 
+        """
+        if not request.user.is_authenticated:
+            return render(request, "auctions/register.html",{
+                'message': "please sign up or log in if you already have an account to be able to put a bid or a comment."
+            })
+
         # get the base price of listing
         base_price = listing.base_price
         
@@ -316,12 +326,18 @@ class listing_details(TemplateView):
 """
 When user in listing details page, he can add this listing to its watchlist
 """
+
 def add_to_watchlist(request, listing_id ):
     item = get_object_or_404(Auction, pk=listing_id)
     
-    # get the watchlist items of this user
-    user_listings = WatchList.objects.filter(user=request.user)
-    print("user_listing........s:", user_listings)
+    # get the watchlist items of this user if the user has an account.
+    if request.user.is_authenticated:
+        user_listings = WatchList.objects.filter(user=request.user)
+    else:
+        return render(request, "auctions/register.html",{
+            'message': "Please register first or log in if you have account to be able to add items to your watchlist"
+        })
+
     if request.method == "POST":
         user_listing, created = WatchList.objects.get_or_create(user=request.user, listing = item)
         print("user_listing: ", user_listing)
@@ -381,7 +397,9 @@ def delete_listing(request, listing_id):
 
 
 """
-This function is for user to edit the auction who created
+This function is for user to edit the auction who created.
+Anonymous user will be directed to the registeration page to 
+create a new account or log in if they have an account.
 """  
 def edit_listing(request, listing_id):
 
