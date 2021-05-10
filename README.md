@@ -19,6 +19,8 @@ This project have the following functionality:
 
 ![auctions Homepage](images/listingDetails.png)
 
+
+
 ![auctions Homepage](images/listingDetailsSec2.png)
 
 
