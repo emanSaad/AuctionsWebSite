@@ -9,7 +9,7 @@ This project have the following functionality:
 ![auctions Homepage](images/homeNoRegisteration.png)
 
 
-- If the user logged in, he have different options. He can create a new listing from home page. He can also edit his own listing, close his auction, add item to his watchlist, and add a bid or comment on listing details page.
+- If the user logged in, he has different options. He can create a new listing from home page. He can also edit his own listing, close his auction, add item to his watchlist, and add a bid or comment on listing details page.
 
 ![auctions Homepage](images/homwithRegisteration.png)
 
